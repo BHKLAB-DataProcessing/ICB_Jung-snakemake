@@ -11,24 +11,37 @@ data_source  = "https://raw.githubusercontent.com/BHKLAB-Pachyderm/ICB_Jung-data
 
 rule get_MultiAssayExp:
     output:
-        S3.remote(prefix + filename)
+        prefix + filename
     input:
         S3.remote(prefix + "processed/CLIN.csv"),
         S3.remote(prefix + "processed/CNA_seg.txt"),
         S3.remote(prefix + "processed/CNA_gene.csv"),
         S3.remote(prefix + "processed/EXPR.csv"),
         S3.remote(prefix + "processed/SNV.csv"),
-        S3.remote(prefix + "processed/cased_sequenced.csv")
+        S3.remote(prefix + "processed/cased_sequenced.csv"),
+        S3.remote(prefix + "annotation/Gencode.v40.annotation.RData")
+    resources:
+        mem_mb=3000,
+        disk_mb=3000
     shell:
         """
         Rscript -e \
         '
+        load(paste0("{prefix}", "annotation/Gencode.v40.annotation.RData"))
         source("https://raw.githubusercontent.com/BHKLAB-Pachyderm/ICB_Common/main/code/get_MultiAssayExp.R");
         saveRDS(
             get_MultiAssayExp(study = "Jung", input_dir = paste0("{prefix}", "processed")), 
             "{prefix}{filename}"
         );
         '
+        """
+
+rule download_annotation:
+    output:
+        S3.remote(prefix + "annotation/Gencode.v40.annotation.RData")
+    shell:
+        """
+        wget https://github.com/BHKLAB-Pachyderm/Annotations/blob/master/Gencode.v40.annotation.RData?raw=true -O {prefix}annotation/Gencode.v40.annotation.RData 
         """
 
 rule format_snv:
