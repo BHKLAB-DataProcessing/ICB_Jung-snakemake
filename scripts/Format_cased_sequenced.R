@@ -1,4 +1,5 @@
 library(data.table)
+library(stringr)
 
 args <- commandArgs(trailingOnly = TRUE)
 input_dir <- args[1]
@@ -10,13 +11,14 @@ rownames(clin) = clin$Sample.ID
 snv = as.data.frame( fread( file.path(input_dir, "SNV.csv.gz") , stringsAsFactors=FALSE  , sep=";"))
 snv = sort( unique( snv[ , "Sample ID" ] ))
 
-cna = as.data.frame( fread( file.path(input_dir, "CNA_seg.txt.gz") , stringsAsFactors=FALSE , sep="\t" , dec="," ))
+cna = as.data.frame( fread( file.path(input_dir, "CNA_seg.txt.gz") , stringsAsFactors=FALSE , sep="\t" ))
 colnames(cna) = c( "sample" , "chrom" , "loc.start" , "loc.end" , "num.mark" , "seg.mean" )
 cna = cna[ !is.na(cna$sample) , ]
 cna = sort( unique( cna$sample ))
 
-rna = sapply( colnames( as.matrix( fread( file.path(input_dir, "EXPR.txt.gz") , stringsAsFactors=FALSE  , sep="\t" , dec=',') ) )[ -1 ] , 
-				function(x){ unlist( strsplit( x , "NSCLC" , fixed=TRUE ) )[2] } )
+rna <- readRDS(file.path(input_dir, 'expr_list.rds'))
+rna <- data.frame(rna[['expr_gene_tpm']])
+rna <- as.numeric(str_replace(colnames(rna), 'NSCLC_', ''))
 
 patient = sort( unique( clin$Sample.ID ) )
 
