@@ -3,6 +3,7 @@ library(readxl)
 library(stringr)
 library(GEOquery)
 library(tabulizer) # needs to install from repo: remotes::install_github(c("ropensci/tabulizerjars", "ropensci/tabulizer"))
+library(tximport)
 
 args <- commandArgs(trailingOnly = TRUE)
 work_dir <- args[1]
@@ -32,7 +33,12 @@ file.remove(file.path(work_dir, 'GSE135222_series_matrix.txt'))
 # expr_list.rds
 source('https://raw.githubusercontent.com/BHKLAB-Pachyderm/ICB_Common/main/code/process_kallisto_output.R')
 load(file.path(annot_dir, "Gencode.v40.annotation.RData"))
-process_kallisto_output(work_dir, 'Jung_kallisto.zip', tx2gene)
+
+dir.create(file.path(work_dir, 'rnaseq'))
+unzip(file.path(work_dir, 'Jung_kallisto.zip'), exdir=file.path(work_dir, 'rnaseq'))
+unlink(file.path(work_dir, 'rnaseq', '__MACOSX'), recursive = TRUE)
+
+process_kallisto_output(work_dir, tx2gene)
 
 expr_list <- readRDS(file.path(work_dir, 'expr_list.rds'))
 rnaseq_samples <- read.table(file.path(work_dir, 'rnaseq_samples.tsv'), header=TRUE, sep='\t')
