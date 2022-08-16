@@ -55,7 +55,7 @@ annotation_tissue <- read.csv(file=file.path(annot_dir, 'curation_tissue.csv'))
 clin <- annotate_tissue(clin=clin, study='Jung', annotation_tissue=annotation_tissue, check_histo=FALSE)
 
 annotation_drug <- read.csv(file=file.path(annot_dir, 'curation_drug.csv'))
-clin <- add_column(clin, unique_drugid='', .after='unique_tissueid')
+clin <- add_column(clin, treatmentid='', .after='tissueid')
 
 write.table( clin , file=file.path(output_dir, "CLIN.csv") , quote=FALSE , sep=";" , col.names=TRUE , row.names=FALSE )
 
